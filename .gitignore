@@ -1,0 +1,9 @@
+venv
+python
+pyspark.zip
+py4j-0.10.9-src.zip
+.idea/
+__pycache__/
+cache_dir/
+outputs/
+runs/

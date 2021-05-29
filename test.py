@@ -2,7 +2,8 @@ import pyspark.sql.streaming
 import pyspark.sql.functions as F
 import torch
 import numpy as np
-
+from nltk import pos_tag, word_tokenize
+from variable import *
 def decontract_text(df: pyspark.sql.DataFrame, cols: str) -> pyspark.sql.DataFrame:
     # specific
     df = df.withColumn(cols, F.regexp_replace(cols, "\n", " ")) \
@@ -112,3 +113,10 @@ def Sentiment(tokenizer,model_loaded,sent):
     label = 'Pos' if ans == 1 else 'Neg'
 
     return [pred, label]
+
+def get_wordcloud(text):
+    x = [word for word, pos in pos_tag(word_tokenize(text)) if pos.startswith('JJ') and word not in ['usertag','urltag']]
+    y = filter_list +['airpods', 'ipod']
+    b =[i for i in y if i in text.lower()]
+    result = list(set(x+b))
+    return result

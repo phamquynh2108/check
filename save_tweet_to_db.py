@@ -81,7 +81,11 @@ def save_tweet():
     lines = lines.withColumn("result", sentiment_tweet(F.col('tweet')))\
                  .withColumn("predict", F.col('result').getItem(0))\
                  .withColumn("label", F.col('result').getItem(1)) \
-                 .select('date', 'raw_tweet', 'tweet', 'classify', 'predict', 'label', 'favourites_count')
+                 .withColumn('nor_predict', (F.col('predict')*2-1) )
+
+    get_Wordcloud = F.udf(lambda row: get_wordcloud(row), ArrayType(StringType()))
+    lines = lines.withColumn("Wordcloud", get_Wordcloud(F.col('tweet'))) \
+                 .select('date', 'raw_tweet', 'tweet', 'classify', 'predict', 'nor_predict', 'label', 'favourites_count', 'Wordcloud')
 
     def write_df_mongo(df):
         url = "mongodb://localhost:27017"
@@ -106,16 +110,6 @@ def save_tweet():
         .foreach(write_df_mongo)\
         .trigger(processingTime='20 seconds')\
         .start().awaitTermination()
-
-    # write to console
-    # query = lines.writeStream \
-    #         .trigger(processingTime='7 seconds') \
-    #         .format("console") \
-    #         .option("truncate", False) \
-    #         .start()
-
-    #query.awaitTermination()
-
 
 if __name__ == "__main__":
     save_tweet()

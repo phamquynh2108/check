@@ -70,7 +70,7 @@ def sendData():
     auth.set_access_token(os.environ['ACCESS_TOKEN'], os.environ['ACCESS_TOKEN_SECRET'])
 
     twitter_stream = Stream(auth, TweetsListener())
-    twitter_stream.filter(track=list, languages=['en'], encoding='utf8')
+    twitter_stream.filter(track=filter_list, languages=['en'], encoding='utf8')
 
 def periodic_work(interval):
     while True:

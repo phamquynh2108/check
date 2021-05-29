@@ -2,7 +2,6 @@ from loguru import logger
 import sys
 from tweepy import OAuthHandler, Stream# to authenticate Twitter API
 from tweepy.streaming import StreamListener
-import pandas as pd
 from kafka import KafkaProducer
 import json
 import time
@@ -17,34 +16,34 @@ class TweetsListener(StreamListener):
         try:
             #check if text has been truncated
             if hasattr(status,"extended_tweet"):
-                text = status.extended_tweet["full_text"]
+                tweet = status.extended_tweet["full_text"]
             else:
-                text = status.text
+                tweet = status.text
 
             # if "retweeted_status" attribute exists, flag this tweet as a retweet
             # if hasattr(status,"retweeted_status"):  #returns True if the specified object has the specified attribute
-            is_retweet = hasattr(status, "retweeted_status")
-            retweeted_text = ""
-            if is_retweet:
-                # check if quoted tweet's text has been truncated before recording it
-                if hasattr(status, "extended_tweet"):  # Check if Retweet
-                    retweeted_text = status.retweeted_status.extended_tweet["full_text"]
-                else:
-                    retweeted_text = status.retweeted_status.text
-
-            is_quote = hasattr(status, "quoted_status")
-            quoted_text = ""
-            if is_quote:
-                if hasattr(status.quoted_status, "extended_tweet"):
-                    quoted_text = status.quoted_status.extended_tweet["full_text"]
-                else:
-                    quoted_text = status.quoted_status.text
+            # is_retweet = hasattr(status, "retweeted_status")
+            # retweet = ""
+            # if is_retweet:
+            #     # check if quoted tweet's text has been truncated before recording it
+            #     if hasattr(status, "extended_tweet"):  # Check if Retweet
+            #         retweet = status.retweeted_status.extended_tweet["full_text"]
+            #     else:
+            #         retweet = status.retweeted_status.text
+            #
+            # is_quote = hasattr(status, "quoted_status")
+            # quoted_tweet = ""
+            # if is_quote:
+            #     if hasattr(status.quoted_status, "extended_tweet"):
+            #         quoted_tweet = status.quoted_status.extended_tweet["full_text"]
+            #     else:
+            #         quoted_tweet = status.quoted_status.text
 
             dict_ = {}
             dict_['date'] = str(status.created_at)
-            dict_['text'] = text
-            dict_['retweeted_text'] = retweeted_text
-            dict_['quoted_text'] = quoted_text
+            dict_['tweet'] = tweet
+           # dict_['retweet'] = retweet
+            #dict_['quoted_tweet'] = quoted_tweet
             dict_['favourites_count'] = status.user.favourites_count
 
             print(dict_)
@@ -75,9 +74,12 @@ def sendData():
 
 def periodic_work(interval):
     while True:
-        sendData()
-        #interval should be an integer, the number of senconds to wait
-        time.sleep(interval)
+        try:
+            sendData()
+            time.sleep(interval)
+        except Exception as e:
+            time.sleep(180)
+            continue
 
 if __name__ == "__main__":
     periodic_work(1)
